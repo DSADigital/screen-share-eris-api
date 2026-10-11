@@ -1,0 +1,19 @@
+[package]
+name = "screen-share-eris-api"
+version = "0.1.0"
+edition = "2024"
+description = "Cópia pública e funcional do serviço de compartilhamento de tela da Éris API (DSA Digital), para auditoria aberta."
+readme = "README.md"
+
+[dependencies]
+actix-web = "4.11.0"
+actix-ws = "0.3.0"
+actix-files = "0.6.8"
+tokio = { version = "1", features = ["sync", "macros"] }
+futures-util = "0.3.31"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+uuid = { version = "1.18.1", features = ["serde", "v4"] }
+nanoid = "0.4"
+env_logger = "0.11.8"
+log = "0.4"

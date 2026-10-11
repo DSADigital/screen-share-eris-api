@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Éris Screen Share — Demo aberta e auditável</title>
+  <meta name="description" content="Cópia pública e funcional do compartilhamento de tela da Éris API. Vídeo P2P via WebRTC, sem banco de dados, sem rastreamento e sem recursos de terceiros." />
+  <meta name="referrer" content="no-referrer" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="bg-orbs" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <div>
+        <strong>Éris Screen Share</strong>
+        <small>Demo aberta · DSA Digital</small>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-ok">● Sem rastreamento</span>
+      <span class="badge">P2P · WebRTC</span>
+      <span class="badge">Sem banco de dados</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ===================== LOBBY ===================== -->
+    <section id="view-lobby" class="view">
+      <div class="hero">
+        <h1>Compartilhamento de tela <span class="grad">transparente</span>.</h1>
+        <p class="lead">
+          Esta é uma cópia funcional do serviço usado na Éris API. O servidor apenas
+          <em>apresenta</em> os dois navegadores; a sua tela trafega direto para o outro
+          participante, criptografada, e <strong>nunca passa pelo servidor</strong>.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card glass">
+          <h2>1 · Quem é você?</h2>
+          <p class="muted">Nome exibido ao outro participante. Fica só na memória do servidor até ele reiniciar.</p>
+          <label class="field">
+            <span>Nome de exibição</span>
+            <input id="input-name" type="text" maxlength="32" placeholder="Ex.: Ana" autocomplete="off" />
+          </label>
+        </div>
+
+        <div class="card glass">
+          <h2>2 · Crie ou entre em uma sessão</h2>
+          <button id="btn-create" class="btn btn-primary btn-block">Criar nova sessão</button>
+          <div class="divider"><span>ou</span></div>
+          <div class="join-row">
+            <input id="input-code" type="text" maxlength="8" placeholder="CÓDIGO" autocomplete="off" />
+            <button id="btn-join" class="btn btn-ghost">Entrar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card glass transparency">
+        <h2>O que acontece com os seus dados</h2>
+        <div class="grid-2">
+          <div>
+            <h3 class="ok">✓ Passa pelo servidor</h3>
+            <ul>
+              <li>Nome de exibição e um ID aleatório (memória)</li>
+              <li>Código da sessão e quem está transmitindo</li>
+              <li>Mensagens de sinalização WebRTC (SDP / ICE)</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="no">✕ Nunca passa pelo servidor</h3>
+            <ul>
+              <li>Imagens, vídeo ou áudio da sua tela</li>
+              <li>Cookies, analytics, fingerprinting</li>
+              <li>Requisições a CDNs, fontes ou domínios de terceiros</li>
+            </ul>
+          </div>
+        </div>
+        <p class="muted small">Confira tudo em tempo real no <strong>Log de sinalização</strong> durante a sessão.</p>
+      </div>
+    </section>
+
+    <!-- ===================== SESSÃO ===================== -->
+    <section id="view-session" class="view hidden">
+      <div class="session-grid">
+        <div class="stage card glass">
+          <div class="stage-head">
+            <div>
+              <span class="muted small">Código da sessão</span>
+              <div class="code-row">
+                <code id="session-code">--------</code>
+                <button id="btn-copy" class="btn btn-icon" title="Copiar código" aria-label="Copiar código">⧉</button>
+              </div>
+            </div>
+            <span id="session-status" class="pill">aguardando</span>
+          </div>
+
+          <div class="video-wrap">
+            <video id="video" autoplay playsinline muted></video>
+            <div id="video-placeholder" class="video-placeholder">
+              <div class="pulse"></div>
+              <p id="placeholder-text">Ninguém está transmitindo ainda.</p>
+            </div>
+            <span id="video-label" class="video-label hidden"></span>
+          </div>
+
+          <div class="controls">
+            <button id="btn-share" class="btn btn-primary">Compartilhar minha tela</button>
+            <button id="btn-swap" class="btn btn-primary hidden">Solicitar troca</button>
+            <button id="btn-stop" class="btn btn-warn hidden">Parar compartilhamento</button>
+            <span class="spacer"></span>
+            <button id="btn-leave" class="btn btn-ghost">Sair</button>
+            <button id="btn-close" class="btn btn-danger">Encerrar sessão</button>
+          </div>
+        </div>
+
+        <aside class="side">
+          <div class="card glass">
+            <h2>Participantes <span class="muted small">(máx. 2)</span></h2>
+            <ul id="participants" class="participants"></ul>
+            <div class="peer-state">
+              <span class="muted small">Conexão P2P</span>
+              <span id="peer-state" class="pill pill-dim">—</span>
+            </div>
+          </div>
+
+          <div class="card glass log-card">
+            <div class="log-head">
+              <h2>Log de sinalização</h2>
+              <button id="btn-clear-log" class="btn btn-icon" title="Limpar" aria-label="Limpar log">⌫</button>
+            </div>
+            <p class="muted small">Tudo o que este navegador envia (↑) e recebe (↓) do servidor.</p>
+            <ol id="log" class="log"></ol>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===================== ENCERRADA ===================== -->
+    <section id="view-ended" class="view hidden">
+      <div class="card glass ended">
+        <div class="ended-icon">✓</div>
+        <h2>Sessão finalizada</h2>
+        <p id="ended-reason" class="muted">Recursos liberados.</p>
+        <button id="btn-back" class="btn btn-primary">Voltar ao início</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal de troca -->
+  <div id="swap-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="swap-title">
+    <div class="modal-card glass">
+      <h2 id="swap-title">Pedido de troca</h2>
+      <p><strong id="swap-name">Alguém</strong> quer assumir a transmissão.</p>
+      <div class="controls">
+        <button id="btn-swap-refuse" class="btn btn-ghost">Recusar</button>
+        <button id="btn-swap-accept" class="btn btn-primary">Aceitar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <footer class="footer">
+    Código-fonte aberto · servidor em Rust (Actix-Web) · nenhum recurso externo é carregado nesta página.
+  </footer>
+</body>
+</html>
